@@ -1,0 +1,372 @@
+openapi: 3.0.0
+info:
+  title: AxleAPI
+  version: 1.0.0
+  description: |
+    Sometimes... I wonder if this is all a simulation.. if I'm still a child reading books without a care in the world... maybe someday... ill.. wake up
+    # Welcome to AxleAPI
+
+    AxleAPI is a modern, OOP-based Express API built with TypeScript. This API is designed for performance, security, and maintainability.
+    
+    ## Rate Limiting
+    
+    To ensure fair use and protect the service, all requests are subject to rate limiting. The default rate limit is configured via the `RATE_LIMIT_MAX` environment variable. If you exceed the allowed number of requests, you will receive a `429 Too Many Requests` response.
+    
+    - Rate limit is based on the real client IP (using `cf-requesting-ip` header if available).
+    - Limits and other settings can be configured in your `.env` file.
+    
+    ## Environment Configuration
+    
+    Key environment variables:
+    
+    - `PORT`: The port the server listens on.
+    - `NODE_ENV`: The environment mode (e.g., `production`, `development`).
+    - `RATE_LIMIT_MAX`: Maximum requests per window per IP.
+    
+    ## Weather Data Caching
+    
+    Weather data is automatically cached and refreshed every 10 minutes to improve performance and reduce external API calls:
+    
+    - **Automatic Refresh**: Weather data is fetched every 10 minutes in the background
+    - **Instant Responses**: API requests return cached data immediately
+    - **Multi-Location Support**: Each requested location is cached independently
+    - **Cache Metadata**: Responses include cache timestamp, age, and statistics
+    - **Cache Status**: Monitor cache health at `/api/weather/cache`
+    
+    This ensures fast API responses while keeping weather data fresh and current.
+    
+    ## API Documentation
+    
+    See the [ReDoc documentation](/index.html) for the full OpenAPI specification and endpoint details.
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /api/weather:
+    get:
+      summary: Get comprehensive weather data
+      description: |
+        Returns comprehensive weather information combining Environment Canada RSS data with Open-Meteo API.
+        Provides current conditions, hourly forecasts (24h), 7-day forecasts from Environment Canada, 
+        and 14-day forecasts from Open-Meteo. Features unified "feels like" temperature using humidex, 
+        wind chill, or apparent temperature as appropriate.
+      parameters:
+        - name: lat
+          in: query
+          description: Latitude coordinate (defaults to Ottawa if not provided)
+          required: false
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+            example: 45.4215
+        - name: lon
+          in: query
+          description: Longitude coordinate (defaults to Ottawa if not provided)
+          required: false
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+            example: -75.6998
+      responses:
+        '200':
+          description: Comprehensive weather data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: 45.4215
+                      longitude:
+                        type: number
+                        example: -75.6998
+                      coordinates:
+                        type: string
+                        example: "45.4215, -75.6998"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-06-28T23:00:00.000Z"
+                  data:
+                    type: object
+                    properties:
+                      current:
+                        type: array
+                        description: Current weather conditions
+                        items:
+                          type: object
+                          properties:
+                            temperature:
+                              type: number
+                              description: Current temperature in Celsius
+                              example: 19
+                            feelsLike:
+                              type: number
+                              description: Unified feels-like temperature (humidex/wind chill/apparent)
+                              example: 18
+                            condition:
+                              type: string
+                              example: "Partly Cloudy"
+                            humidity:
+                              type: number
+                              example: 75.6
+                            windSpeed:
+                              type: number
+                              example: 15.6
+                            windDirection:
+                              type: string
+                              example: "W"
+                      hourly:
+                        type: array
+                        description: Hourly forecast for next 24 hours
+                        items:
+                          type: object
+                          properties:
+                            time:
+                              type: string
+                              format: date-time
+                              example: "2025-06-28T23:00"
+                            temperature:
+                              type: number
+                              example: 18
+                            feelsLike:
+                              type: number
+                              example: 17
+                            condition:
+                              type: string
+                              example: "Clear sky"
+                            precipitationProbability:
+                              type: number
+                              example: 10
+                      forecast:
+                        type: object
+                        properties:
+                          7day:
+                            type: array
+                            description: 7-day forecast from Environment Canada
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date-time
+                                temperature:
+                                  type: number
+                                temperatureType:
+                                  type: string
+                                  enum: ["high", "low"]
+                                summary:
+                                  type: string
+                          14day:
+                            type: array
+                            description: 14-day forecast from Open-Meteo
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                  example: "2025-06-28"
+                                temperatureMax:
+                                  type: number
+                                  example: 28
+                                temperatureMin:
+                                  type: number
+                                  example: 18
+                                feelsLikeMax:
+                                  type: number
+                                  example: 30
+                                feelsLikeMin:
+                                  type: number
+                                  example: 16
+                                condition:
+                                  type: string
+                                  example: "Moderate rain"
+                      alerts:
+                        type: array
+                        description: Weather alerts from Environment Canada
+                        items:
+                          type: object
+                  metadata:
+                    type: object
+                    properties:
+                      sources:
+                        type: object
+                        properties:
+                          primary:
+                            type: string
+                            example: "Environment Canada"
+                          secondary:
+                            type: array
+                            items:
+                              type: string
+                            example: ["Open-Meteo"]
+                          confidence:
+                            type: number
+                            example: 0.95
+                      capabilities:
+                        type: object
+                        description: API capabilities and data sources
+                      limitations:
+                        type: object
+                        description: API limitations and constraints
+        '400':
+          description: Invalid coordinates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid latitude"
+                  message:
+                    type: string
+                    example: "Latitude must be between -90 and 90"
+        '500':
+          description: Weather service unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Weather service unavailable"
+                  message:
+                    type: string
+                    example: "Unable to fetch weather data from available sources"
+
+  /api/weather/cache:
+    get:
+      tags:
+        - Weather
+      summary: Weather cache status
+      description: |
+        Get weather cache status, statistics, and currently cached locations.
+        
+        The weather service uses automatic caching with 10-minute refresh intervals
+        to improve performance and reduce external API calls.
+      responses:
+        '200':
+          description: Cache status and statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cache:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                        example: true
+                      refreshInterval:
+                        type: string
+                        example: "10 minutes"
+                      statistics:
+                        type: object
+                        properties:
+                          totalLocations:
+                            type: number
+                            example: 3
+                          totalFetches:
+                            type: number
+                            example: 45
+                          totalErrors:
+                            type: number
+                            example: 1
+                          averageAge:
+                            type: string
+                            example: "127s"
+                      locations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            coordinates:
+                              type: string
+                              example: "45.4215, -75.6998"
+                            key:
+                              type: string
+                              example: "45.4215,-75.6998"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-06-28T23:45:30.123Z"
+        '500':
+          description: Cache status unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Cache status unavailable"
+                  message:
+                    type: string
+                    example: "Unable to fetch cache status from the weather service"
+
+  /api/discord/accounts:
+    get:
+      summary: Get active Discord account IDs
+      description: Returns an array of active Discord account IDs from the static JSON file
+      responses:
+        '200':
+          description: Successfully retrieved active Discord accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      pattern: '^[0-9]{17,19}$'
+                    example: ["123456789012345678", "234567890123456789", "345678901234567890"]
+                  count:
+                    type: integer
+                    example: 3
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-06-28T23:45:30.123Z"
+        '500':
+          description: Failed to retrieve active accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Failed to retrieve active accounts"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-06-28T23:45:30.123Z"
