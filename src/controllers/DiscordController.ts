@@ -12,8 +12,8 @@
 import { Request, Response } from 'express';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { BaseController } from './BaseController.js';
-import { logger } from '../utils/logger.js';
+import { BaseController } from './BaseController';
+import { logger } from '../utils/logger';
 
 /**
  * Discord controller class extending BaseController

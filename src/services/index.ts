@@ -11,13 +11,13 @@
  */
 
 // Environment Canada Weather Service
-export { getWeatherData as getEnvironmentCanadaData } from './environmentCanadaWeatherService.js';
+export { getWeatherData as getEnvironmentCanadaData } from './environmentCanadaWeatherService';
 
 // Advanced Weather Service (combines multiple sources)
-export { getAdvancedWeatherData } from './advancedWeatherService.js';
+export { getAdvancedWeatherData } from './advancedWeatherService';
 
 // Weather Cache Manager (automatic refresh every 10 minutes)
-export { weatherCacheManager } from './weatherCacheManager.js';
+export { weatherCacheManager } from './weatherCacheManager';
 
 /**
  * Service configuration and metadata
@@ -68,8 +68,8 @@ export async function getWeatherServiceHealth(): Promise<{
 	const testLon = '-75.6998';
 
 	try {
-		const { getWeatherData } = await import('./environmentCanadaWeatherService.js');
-		const { getAdvancedWeatherData } = await import('./advancedWeatherService.js');
+		const { getWeatherData } = await import('./environmentCanadaWeatherService');
+		const { getAdvancedWeatherData } = await import('./advancedWeatherService');
 
 		const [envTest, advancedTest] = await Promise.allSettled([
 			getWeatherData(testLat, testLon),
