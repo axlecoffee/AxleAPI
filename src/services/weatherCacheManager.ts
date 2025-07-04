@@ -10,8 +10,8 @@
  * @since 2025-06-28
  */
 
-import { getAdvancedWeatherData } from './advancedWeatherService.js';
-import { logger } from '../utils/logger.js';
+import { getAdvancedWeatherData } from './advancedWeatherService';
+import { logger } from '../utils/logger';
 
 /**
  * Cache refresh interval in milliseconds (10 minutes)

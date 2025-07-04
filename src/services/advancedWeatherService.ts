@@ -19,8 +19,8 @@
  */
 
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { getWeatherData as getEnvironmentCanadaData } from './environmentCanadaWeatherService.js';
-import { logger } from '../utils/logger.js';
+import { getWeatherData as getEnvironmentCanadaData } from './environmentCanadaWeatherService';
+import { logger } from '../utils/logger';
 
 /**
  * HTTP request timeout for Open-Meteo API calls (milliseconds)

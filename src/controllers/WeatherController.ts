@@ -4,7 +4,7 @@
  * @module WeatherController
  */
 import { Request, Response, NextFunction } from 'express';
-import { weatherCacheManager } from '../services/weatherCacheManager.js';
+import { weatherCacheManager } from '../services/weatherCacheManager';
 import { logger } from '../utils/logger';
 
 /**

@@ -4,7 +4,8 @@ module.exports = {
             name: 'axle-api',
             script: 'src/app.ts',
             interpreter: 'tsx',
-            exec_mode: 'cluster_mode',
+            cwd: "/home/axle/axlecoffee/API",
+            exec_mode: 'fork',
             watch: true,
             env: {
                 NODE_ENV: 'development',

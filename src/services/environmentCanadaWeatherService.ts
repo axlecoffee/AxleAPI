@@ -12,7 +12,7 @@
 
 import axios, { AxiosResponse } from 'axios';
 import { parseStringPromise } from 'xml2js';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 
 /**
  * Maximum age of weather data before warning (in hours)
